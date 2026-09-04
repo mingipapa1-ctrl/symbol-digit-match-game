@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>기호 매치 챌린지</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F3F5FC;
+    --panel:#FFFFFF;
+    --ink:#1B1E2B;
+    --muted:#767C93;
+    --accent:#3454D1;
+    --accent-soft:#E3E8FC;
+    --o-color:#E1483B;
+    --x-color:#2B2E3D;
+    --warn:#DB8A1E;
+    --gold:#C79A2E;
+    --radius:16px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Manrope',sans-serif;
+    min-height:100vh;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding:28px 14px 60px;
+  }
+  .mono{font-family:'JetBrains Mono',monospace;}
+  .app{width:100%;max-width:560px;}
+  header{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:18px;
+    gap:12px;
+  }
+  header h1{font-size:22px;font-weight:800;margin:0 0 3px;letter-spacing:-0.01em;}
+  header p{margin:0;font-size:13px;color:var(--muted);}
+  .stats{text-align:right;font-size:12.5px;color:var(--muted);line-height:1.5;white-space:nowrap;}
+  .stats b{color:var(--ink);font-weight:700;}
+  .card{
+    background:var(--panel);
+    border-radius:var(--radius);
+    padding:24px 20px;
+    box-shadow:0 1px 2px rgba(27,30,43,0.04), 0 10px 30px rgba(27,30,43,0.06);
+  }
+
+  /* ---- start screen ---- */
+  .rules{margin:16px 0 20px;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px;}
+  .rules li{display:flex;gap:10px;font-size:14.5px;line-height:1.5;color:var(--ink);}
+  .rules li .dot{flex:none;width:6px;height:6px;border-radius:50%;background:var(--accent);margin-top:8px;}
+  .sample{display:inline-flex;align-items:center;gap:2px;background:var(--accent-soft);border-radius:6px;padding:1px 6px;font-size:13px;font-weight:600;color:var(--accent);}
+  .field{margin-bottom:18px;}
+  .field label{display:block;font-size:13px;font-weight:700;color:var(--ink);margin-bottom:7px;}
+  .name-input{
+    width:100%;
+    padding:13px 14px;
+    font-size:15px;
+    font-family:'Manrope',sans-serif;
+    border:1.5px solid var(--accent-soft);
+    border-radius:12px;
+    background:var(--bg);
+    color:var(--ink);
+    outline:none;
+    transition:border-color .15s ease;
+  }
+  .name-input:focus{border-color:var(--accent);}
+  .error-text{font-size:12.5px;color:var(--o-color);margin-top:6px;display:none;}
+  .error-text.show{display:block;}
+
+  button{font-family:'Manrope',sans-serif;cursor:pointer;border:none;}
+  .btn-primary{
+    width:100%;background:var(--accent);color:#fff;font-size:16px;font-weight:700;
+    padding:15px;border-radius:12px;transition:transform .12s ease, background .15s ease;
+  }
+  .btn-primary:active{transform:scale(0.98);background:#2c46b8;}
+  .btn-secondary{
+    width:100%;background:transparent;color:var(--muted);font-size:14px;font-weight:600;
+    padding:12px;border-radius:12px;margin-top:8px;
+  }
+  .btn-secondary:active{background:var(--bg);}
+
+  /* ---- game screen ---- */
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;font-size:13.5px;color:var(--muted);}
+  .topbar b{color:var(--ink);}
+  .timer-row{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
+  .timer-num{font-size:34px;font-weight:700;min-width:70px;transition:color .15s ease;}
+  .timer-track{flex:1;height:10px;background:var(--accent-soft);border-radius:99px;overflow:hidden;}
+  .timer-fill{height:100%;width:100%;background:var(--accent);border-radius:99px;transition:width .1s linear, background .2s ease;}
+
+  .section-label{font-size:12px;font-weight:700;color:var(--muted);margin:0 0 8px;}
+
+  .keypanel{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:22px;}
+  .keypanel.anim{animation:keyIn .35s ease;}
+  @keyframes keyIn{from{opacity:0;transform:translateY(4px);} to{opacity:1;transform:translateY(0);}}
+  .keycap{background:var(--bg);border:1px solid #E4E7F2;border-radius:10px;padding:12px 2px 10px;text-align:center;}
+  .keycap .sym{font-size:22px;line-height:1.1;}
+  .keycap .num{font-size:16px;font-weight:700;color:var(--accent);margin-top:6px;}
+
+  .stripwrap{overflow-x:auto;margin:0 -20px 20px;padding:4px 20px 10px;-webkit-overflow-scrolling:touch;}
+  .strip{display:flex;gap:8px;width:max-content;}
+  .cell{flex:none;width:48px;border-radius:10px;border:1.5px solid #E4E7F2;background:var(--bg);text-align:center;padding:10px 0 8px;transition:border-color .15s ease, background .15s ease, transform .12s ease;}
+  .cell .sym{font-size:19px;}
+  .cell .ans{margin-top:8px;font-size:20px;font-weight:800;height:20px;line-height:1;}
+  .cell.current{border-color:var(--accent);background:var(--accent-soft);transform:scale(1.05);box-shadow:0 0 0 3px rgba(52,84,209,0.12);}
+  .cell.answered{border-color:#DCDFEA;background:var(--panel);}
+  .cell .ans.o{color:var(--o-color);}
+  .cell .ans.x{color:var(--x-color);}
+
+  .numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;}
+  .numkey{background:var(--panel);border:1.5px solid var(--accent-soft);border-radius:12px;padding:16px 0;font-size:22px;font-weight:700;color:var(--ink);transition:background .1s ease, transform .1s ease;}
+  .numkey:active{background:var(--accent-soft);transform:scale(0.95);}
+  .hint{text-align:center;font-size:12px;color:var(--muted);margin-top:12px;}
+
+  /* ---- overlay (countdown) ---- */
+  .overlay{text-align:center;padding:30px 10px;}
+  .overlay .big{font-size:52px;font-weight:800;color:var(--accent);margin:6px 0 10px;}
+  .overlay .msg{font-size:15px;color:var(--muted);}
+
+  /* ---- leaderboard ---- */
+  .score-summary{text-align:center;padding:6px 0 20px;}
+  .score-summary .name{font-size:14px;color:var(--muted);}
+  .score-summary .score{font-size:44px;font-weight:800;color:var(--accent);margin:4px 0;}
+  .score-summary .score.neg{color:var(--o-color);}
+  .score-summary .sub{font-size:13px;color:var(--muted);}
+  .lb-title{font-size:13px;font-weight:700;color:var(--muted);margin:0 0 10px;}
+  .lb-row{display:flex;align-items:center;gap:10px;padding:10px 8px;border-radius:10px;}
+  .lb-row + .lb-row{margin-top:2px;}
+  .lb-rank{width:28px;flex:none;font-weight:800;font-size:15px;color:var(--muted);text-align:center;}
+  .lb-rank.gold{color:var(--gold);}
+  .lb-info{flex:1;min-width:0;}
+  .lb-name{font-size:14.5px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .lb-detail{font-size:12px;color:var(--muted);margin-top:2px;}
+  .lb-total{font-size:16px;font-weight:800;color:var(--ink);flex:none;}
+  .lb-total.neg{color:var(--o-color);}
+  .lb-row.mine{background:var(--accent-soft);}
+  .lb-row.mine .lb-name{color:var(--accent);}
+  .lb-row.mine .lb-total{color:var(--accent);}
+  .lb-row.mine .lb-total.neg{color:var(--o-color);}
+  .lb-empty{text-align:center;font-size:13.5px;color:var(--muted);padding:20px 0;}
+
+  .hidden{display:none !important;}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div>
+      <h1>기호 매치 챌린지</h1>
+      <p>기호와 숫자를 빠르게 매칭하는 스피드 게임</p>
+    </div>
+    <div class="stats" id="statsBox">
+      <div>최고 총점 <b id="statBest">-</b></div>
+      <div>도전 <b id="statAttempts">0</b>회</div>
+    </div>
+  </header>
+
+  <div class="card">
+
+    <!-- 시작 화면 -->
+    <div id="startScreen">
+      <ul class="rules">
+        <li><span class="dot"></span><span>위쪽 <b>응답 눈금</b>에서 기호마다 짝지어진 숫자(1~9)를 확인해요.</span></li>
+        <li><span class="dot"></span><span>아래 <b>검사 눈금</b>에 9개의 기호가 중복 없이 무작위로 나와요. 예: <span class="sample mono">#</span> → 응답 눈금에서 확인한 숫자</span></li>
+        <li><span class="dot"></span><span>맞히면 <b>+1점</b>(빨간 O), 틀리면 <b>-1점</b>(X)이 바로 표시돼요.</span></li>
+        <li><span class="dot"></span><span>기호는 건너뛰거나 되돌릴 수 없어요. <b>15초</b> 안에 9개를 모두 맞혀보세요. 시간이 끝나면 못 푼 문제는 오답 처리돼요.</span></li>
+      </ul>
+      <div class="field">
+        <label for="nameInput">이름</label>
+        <input type="text" id="nameInput" class="name-input" placeholder="이름을 입력하세요" maxlength="10">
+        <div class="error-text" id="nameError">이름을 입력해주세요</div>
+      </div>
+      <button class="btn-primary" id="startBtn">시작하기</button>
+    </div>
+
+    <!-- 준비 카운트다운 -->
+    <div id="countdownScreen" class="overlay hidden">
+      <div class="msg" id="cdMsg">응답 눈금을 확인하세요</div>
+      <div class="big" id="countdownNum">3</div>
+      <div class="msg">곧 검사 눈금이 나타납니다</div>
+    </div>
+
+    <!-- 게임 화면 -->
+    <div id="gameScreen" class="hidden">
+      <div class="topbar">
+        <span id="gName">플레이어</span>
+        <span>총점 <b id="gScore">0</b> · 남은 문제 <b id="gLeft">9</b></span>
+      </div>
+
+      <div class="timer-row">
+        <div class="timer-num mono" id="timerNum">15.0</div>
+        <div class="timer-track"><div class="timer-fill" id="timerFill"></div></div>
+      </div>
+
+      <p class="section-label">응답 눈금</p>
+      <div class="keypanel" id="keypanel"></div>
+
+      <p class="section-label">검사 눈금</p>
+      <div class="stripwrap"><div class="strip" id="strip"></div></div>
+
+      <div class="numpad" id="numpad"></div>
+      <p class="hint">키보드 숫자 1~9 로도 입력할 수 있어요</p>
+    </div>
+
+    <!-- 순위표 화면 -->
+    <div id="leaderboardScreen" class="hidden">
+      <div class="score-summary">
+        <div class="name" id="lsName">플레이어님</div>
+        <div class="score" id="lsScore">0점</div>
+        <div class="sub" id="lsSub">정답 0개(+0점) · 오답 0개(-0점) · 완료 0.0초</div>
+      </div>
+      <p class="lb-title">순위표 TOP 10 (총점 순)</p>
+      <div id="lbTable"></div>
+      <button class="btn-primary" id="retryBtn" style="margin-top:16px;">다시 도전하기</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+  const SYMBOLS = ['#','⇒','⊥','}','⊗','×','¬','/','Δ'];
+
+  let mapping = {};
+  let sequence = [];
+  let answers = [];
+  let currentIndex = 0;
+  let correctCount = 0;
+  let attemptCount = 0;
+  const ROUND_SECONDS = 15;
+  let timeLeft = ROUND_SECONDS;
+  let timerHandle = null;
+  let inputEnabled = false;
+  let playerName = '플레이어';
+  let leaderboard = [];
+  let nextEntryId = 1;
+  let lastEntryId = null;
+
+  const $ = (id) => document.getElementById(id);
+
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i=a.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [a[i],a[j]] = [a[j],a[i]];
+    }
+    return a;
+  }
+
+  function showScreen(name){
+    ['startScreen','countdownScreen','gameScreen','leaderboardScreen'].forEach(id=>{
+      $(id).classList.toggle('hidden', id !== name);
+    });
+  }
+
+  function renderKeypanel(){
+    const panel = $('keypanel');
+    panel.innerHTML = '';
+    panel.classList.remove('anim');
+    void panel.offsetWidth;
+    SYMBOLS.forEach(sym=>{
+      const el = document.createElement('div');
+      el.className = 'keycap';
+      el.innerHTML = `<div class="sym mono">${sym}</div><div class="num mono">${mapping[sym]}</div>`;
+      panel.appendChild(el);
+    });
+    panel.classList.add('anim');
+  }
+
+  function renderStrip(){
+    const strip = $('strip');
+    strip.innerHTML = '';
+    sequence.forEach((sym, i)=>{
+      const cell = document.createElement('div');
+      cell.className = 'cell';
+      cell.id = 'cell-' + i;
+      if(i === currentIndex) cell.classList.add('current');
+      cell.innerHTML = `<div class="sym mono">${sym}</div><div class="ans mono"></div>`;
+      strip.appendChild(cell);
+    });
+    scrollToCurrent();
+  }
+
+  function scrollToCurrent(){
+    const cell = $('cell-' + currentIndex);
+    if(cell) cell.scrollIntoView({behavior:'smooth', inline:'center', block:'nearest'});
+  }
+
+  function paintCell(index, correct){
+    const cell = $('cell-' + index);
+    if(!cell) return;
+    cell.classList.remove('current');
+    cell.classList.add('answered');
+    const ans = cell.querySelector('.ans');
+    ans.textContent = correct ? 'O' : 'X';
+    ans.classList.add(correct ? 'o' : 'x');
+  }
+
+  function renderNumpad(){
+    const pad = $('numpad');
+    pad.innerHTML = '';
+    for(let n=1;n<=9;n++){
+      const btn = document.createElement('button');
+      btn.className = 'numkey mono';
+      btn.textContent = n;
+      btn.addEventListener('click', ()=>submitAnswer(n));
+      pad.appendChild(btn);
+    }
+  }
+
+  function currentScore(){
+    return correctCount - (attemptCount - correctCount);
+  }
+
+  function updateGameHeader(){
+    $('gScore').textContent = currentScore();
+    $('gLeft').textContent = sequence.length - attemptCount;
+  }
+
+  function updateTopHeader(){
+    const sorted = leaderboard.slice().sort((a,b)=> b.total - a.total);
+    $('statBest').textContent = sorted.length ? fmtScore(sorted[0].total) : '-';
+    $('statAttempts').textContent = leaderboard.length;
+  }
+
+  function fmtScore(n){
+    return (n > 0 ? n : n) + '점';
+  }
+
+  function updateTimerUI(){
+    $('timerNum').textContent = timeLeft.toFixed(1);
+    const pct = Math.max(0, (timeLeft / ROUND_SECONDS) * 100);
+    const fill = $('timerFill');
+    fill.style.width = pct + '%';
+    if(timeLeft <= 3){
+      fill.style.background = 'var(--o-color)';
+      $('timerNum').style.color = 'var(--o-color)';
+    } else if(timeLeft <= 6){
+      fill.style.background = 'var(--warn)';
+      $('timerNum').style.color = 'var(--warn)';
+    } else {
+      fill.style.background = 'var(--accent)';
+      $('timerNum').style.color = 'var(--ink)';
+    }
+  }
+
+  function recordAnswer(index, correct){
+    answers[index] = correct;
+    attemptCount++;
+    if(correct) correctCount++;
+    paintCell(index, correct);
+  }
+
+  function beginGame(){
+    const nums = shuffle([1,2,3,4,5,6,7,8,9]);
+    mapping = {};
+    SYMBOLS.forEach((s,i)=> mapping[s] = nums[i]);
+    sequence = shuffle(SYMBOLS);
+    answers = [];
+    currentIndex = 0;
+    correctCount = 0;
+    attemptCount = 0;
+    timeLeft = ROUND_SECONDS;
+
+    $('gName').textContent = playerName + '님';
+    renderKeypanel();
+    renderStrip();
+    renderNumpad();
+    updateGameHeader();
+    updateTimerUI();
+
+    runCountdown();
+  }
+
+  function runCountdown(){
+    inputEnabled = false;
+    $('cdMsg').textContent = playerName + '님, 응답 눈금을 확인하세요';
+    showScreen('countdownScreen');
+    let n = 3;
+    $('countdownNum').textContent = n;
+    const cd = setInterval(()=>{
+      n--;
+      if(n > 0){
+        $('countdownNum').textContent = n;
+      } else {
+        clearInterval(cd);
+        showScreen('gameScreen');
+        startTimer();
+      }
+    }, 700);
+  }
+
+  function startTimer(){
+    inputEnabled = true;
+    if(timerHandle) clearInterval(timerHandle);
+    timerHandle = setInterval(()=>{
+      timeLeft = Math.max(0, timeLeft - 0.1);
+      updateTimerUI();
+      if(timeLeft <= 0){
+        endGame();
+      }
+    }, 100);
+  }
+
+  function submitAnswer(num){
+    if(!inputEnabled) return;
+    if(currentIndex >= sequence.length) return;
+    const sym = sequence[currentIndex];
+    const correct = mapping[sym] === num;
+    recordAnswer(currentIndex, correct);
+    updateGameHeader();
+
+    currentIndex++;
+    if(currentIndex < sequence.length){
+      const next = $('cell-' + currentIndex);
+      if(next) next.classList.add('current');
+      scrollToCurrent();
+    } else {
+      endGame();
+    }
+  }
+
+  function endGame(){
+    inputEnabled = false;
+    if(timerHandle) clearInterval(timerHandle);
+
+    // 시간 종료 시 아직 응답하지 못한 문제는 전부 오답 처리
+    for(let i = currentIndex; i < sequence.length; i++){
+      if(answers[i] === undefined) recordAnswer(i, false);
+    }
+    currentIndex = sequence.length;
+    updateGameHeader();
+
+    const elapsed = Math.min(ROUND_SECONDS, Math.max(0, Math.round((ROUND_SECONDS - timeLeft) * 10) / 10));
+    const wrong = attemptCount - correctCount;
+    const entry = {
+      id: nextEntryId++,
+      name: playerName,
+      correct: correctCount,
+      wrong: wrong,
+      total: correctCount - wrong,
+      time: elapsed
+    };
+    leaderboard.push(entry);
+    lastEntryId = entry.id;
+
+    showLeaderboard(entry);
+    updateTopHeader();
+  }
+
+  function showLeaderboard(entry){
+    $('lsName').textContent = entry.name + '님';
+    const scoreEl = $('lsScore');
+    scoreEl.textContent = fmtScore(entry.total);
+    scoreEl.classList.toggle('neg', entry.total < 0);
+    $('lsSub').textContent = `정답 ${entry.correct}개(+${entry.correct}점) · 오답 ${entry.wrong}개(-${entry.wrong}점) · 완료 ${entry.time.toFixed(1)}초`;
+
+    const sorted = leaderboard.slice().sort((a,b)=> b.total - a.total || a.time - b.time || b.correct - a.correct || a.id - b.id);
+    const top10 = sorted.slice(0, 10);
+    const medals = ['🥇','🥈','🥉'];
+
+    const table = $('lbTable');
+    if(top10.length === 0){
+      table.innerHTML = '<div class="lb-empty">아직 기록이 없어요</div>';
+    } else {
+      table.innerHTML = top10.map((e, i)=>{
+        const rank = i + 1;
+        const mine = e.id === lastEntryId ? ' mine' : '';
+        const negClass = e.total < 0 ? ' neg' : '';
+        const rankLabel = medals[i] || rank;
+        return `<div class="lb-row${mine}">
+                  <div class="lb-rank">${rankLabel}</div>
+                  <div class="lb-info">
+                    <div class="lb-name">${escapeHtml(e.name)}</div>
+                    <div class="lb-detail">정답 ${e.correct} · 오답 ${e.wrong} · ${e.time.toFixed(1)}초</div>
+                  </div>
+                  <div class="lb-total${negClass}">${fmtScore(e.total)}</div>
+                </div>`;
+      }).join('');
+    }
+    showScreen('leaderboardScreen');
+  }
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  document.addEventListener('keydown', (e)=>{
+    if(!inputEnabled) return;
+    if(e.key >= '1' && e.key <= '9'){
+      submitAnswer(parseInt(e.key, 10));
+    }
+  });
+
+  $('startBtn').addEventListener('click', ()=>{
+    const val = $('nameInput').value.trim();
+    if(!val){
+      $('nameError').classList.add('show');
+      $('nameInput').focus();
+      return;
+    }
+    $('nameError').classList.remove('show');
+    playerName = val;
+    beginGame();
+  });
+
+  $('nameInput').addEventListener('input', ()=>{
+    if($('nameInput').value.trim()) $('nameError').classList.remove('show');
+  });
+  $('nameInput').addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter') $('startBtn').click();
+  });
+
+  $('retryBtn').addEventListener('click', ()=>{
+    showScreen('startScreen');
+    $('nameInput').value = playerName;
+    $('nameInput').focus();
+  });
+
+  updateTopHeader();
+  showScreen('startScreen');
+})();
+</script>
+</body>
+</html>
