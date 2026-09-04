@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<base target="_top">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>독서모임 조 편성 신청</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#16263a;
+    --ink-2:#1f3a54;
+    --ink-3:#274863;
+    --cream:#f6f1e4;
+    --cream-dim:#e9e1cc;
+    --brass:#c19a52;
+    --brass-dim:#8f7038;
+    --teal:#5b8a87;
+    --rose:#b5533c;
+    --text-dark:#22303f;
+    --text-light:#f3ecdd;
+    --text-muted:#9fb0c2;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(circle at 15% -10%, rgba(91,138,135,0.25), transparent 40%),
+      radial-gradient(circle at 110% 10%, rgba(193,154,82,0.18), transparent 45%),
+      var(--ink);
+    color:var(--text-light);
+    font-family:'IBM Plex Sans KR', sans-serif;
+    min-height:100vh;
+    padding:40px 16px 80px;
+  }
+  .app{max-width:920px; margin:0 auto;}
+
+  .header{text-align:center; margin-bottom:36px;}
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    letter-spacing:0.25em;
+    font-size:11px;
+    color:var(--brass);
+    text-transform:uppercase;
+    margin-bottom:10px;
+  }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:clamp(28px, 5vw, 42px);
+    margin:0 0 10px;
+    color:var(--text-light);
+  }
+  .sub{
+    color:var(--text-muted);
+    font-size:14px;
+    line-height:1.7;
+    max-width:520px;
+    margin:0 auto;
+  }
+
+  .name-field{
+    max-width:420px;
+    margin:32px auto 40px;
+    background:var(--ink-2);
+    border:1px solid rgba(193,154,82,0.35);
+    border-radius:10px;
+    padding:16px 18px;
+  }
+  .name-field label{
+    display:block;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:10px;
+    letter-spacing:0.15em;
+    color:var(--brass);
+    text-transform:uppercase;
+    margin-bottom:8px;
+  }
+  .name-field input{
+    width:100%;
+    background:transparent;
+    border:none;
+    border-bottom:1px solid rgba(243,236,221,0.3);
+    color:var(--text-light);
+    font-family:'Fraunces', serif;
+    font-size:20px;
+    padding:6px 2px 10px;
+    outline:none;
+  }
+  .name-field input::placeholder{color:rgba(243,236,221,0.35);}
+  .name-field input:focus{border-bottom-color:var(--brass);}
+
+  .cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
+    gap:22px;
+  }
+
+  .card{
+    background:var(--cream);
+    color:var(--text-dark);
+    border-radius:14px;
+    overflow:hidden;
+    box-shadow:0 18px 40px rgba(0,0,0,0.28);
+    position:relative;
+    display:flex;
+    flex-direction:column;
+  }
+  .card.full{filter:grayscale(0.15);}
+
+  .card__stub{
+    background:var(--ink-3);
+    color:var(--text-light);
+    padding:18px 20px 16px;
+    position:relative;
+  }
+  .group-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.2em;
+    color:var(--brass);
+    text-transform:uppercase;
+  }
+  .group-name{
+    font-family:'Fraunces', serif;
+    font-size:26px;
+    font-weight:600;
+    margin:4px 0 14px;
+  }
+  .route{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+  }
+  .route-stop{
+    background:rgba(255,255,255,0.08);
+    border:1px solid rgba(193,154,82,0.4);
+    border-radius:6px;
+    padding:6px 8px;
+    text-align:center;
+    flex:1;
+    line-height:1.4;
+  }
+  .route-stop .m{display:block; color:var(--text-muted); font-size:10px; margin-bottom:2px;}
+  .route-stop .b{color:var(--text-light); font-weight:500;}
+  .route-arrow{color:var(--brass); font-size:13px;}
+
+  .perforation{
+    height:0;
+    border-top:2px dashed rgba(34,48,63,0.25);
+    position:relative;
+    margin:0 18px;
+  }
+  .perforation::before, .perforation::after{
+    content:"";
+    position:absolute;
+    top:-9px;
+    width:18px; height:18px;
+    background:var(--ink);
+    border-radius:50%;
+  }
+  .perforation::before{left:-27px;}
+  .perforation::after{right:-27px;}
+
+  .card__manifest{
+    padding:18px 20px 20px;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+  }
+  .seats{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:10px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--text-dark);
+  }
+  .seats b{font-family:'Fraunces', serif; font-size:16px;}
+  .bar{
+    height:5px;
+    background:var(--cream-dim);
+    border-radius:3px;
+    overflow:hidden;
+    margin-bottom:14px;
+  }
+  .bar-fill{height:100%; background:var(--teal); transition:width .3s ease;}
+  .bar-fill.full{background:var(--rose);}
+
+  .manifest-list{
+    list-style:none;
+    margin:0 0 14px;
+    padding:0;
+    min-height:26px;
+    flex:1;
+  }
+  .manifest-list li{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:14px;
+    padding:6px 0;
+    border-bottom:1px dotted rgba(34,48,63,0.15);
+  }
+  .manifest-list li:last-child{border-bottom:none;}
+  .manifest-list .idx{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--brass-dim);
+    margin-right:8px;
+  }
+  .manifest-list .rm{
+    background:none; border:none; cursor:pointer;
+    color:rgba(34,48,63,0.35);
+    font-size:14px;
+    padding:2px 6px;
+  }
+  .manifest-list .rm:hover{color:var(--rose);}
+  .empty-slot{color:rgba(34,48,63,0.35); font-size:13px; font-style:italic;}
+
+  .btn-board{
+    width:100%;
+    border:none;
+    border-radius:8px;
+    padding:11px;
+    background:var(--ink);
+    color:var(--text-light);
+    font-family:'IBM Plex Sans KR', sans-serif;
+    font-weight:600;
+    font-size:14px;
+    cursor:pointer;
+    letter-spacing:0.02em;
+  }
+  .btn-board:hover{background:var(--ink-3);}
+  .btn-board:disabled{
+    background:var(--cream-dim);
+    color:rgba(34,48,63,0.4);
+    cursor:not-allowed;
+  }
+
+  .stamp{
+    position:absolute;
+    top:14px; right:16px;
+    border:2px solid var(--rose);
+    color:var(--rose);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:0.1em;
+    padding:4px 8px;
+    border-radius:6px;
+    transform:rotate(8deg);
+    opacity:0.9;
+  }
+
+  .footer{
+    text-align:center;
+    margin-top:44px;
+  }
+  .footer button{
+    background:none;
+    border:1px solid rgba(159,176,194,0.3);
+    color:var(--text-muted);
+    font-size:12px;
+    padding:8px 14px;
+    border-radius:20px;
+    cursor:pointer;
+    font-family:'IBM Plex Sans KR', sans-serif;
+  }
+  .footer button:hover{border-color:var(--rose); color:var(--rose);}
+  .updated{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--text-muted);
+    margin-top:10px;
+  }
+
+  @media (max-width:480px){
+    .route{flex-wrap:wrap;}
+    .perforation::before, .perforation::after{display:none;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="eyebrow">Sept — Nov · 유럽도시기행 순환독서</div>
+    <h1>독서모임 조 편성 신청</h1>
+    <p class="sub">원하는 조를 골라 이름을 남겨주세요. 선착순으로 자리가 차며, 정원이 다 차면 자동으로 마감됩니다.</p>
+  </div>
+
+  <div class="name-field">
+    <label>신청자 이름</label>
+    <input type="text" id="nameInput" placeholder="이름을 입력하세요" maxlength="20">
+  </div>
+
+  <div class="cards" id="cards"></div>
+
+  <div class="footer">
+    <button id="resetBtn">전체 신청 초기화</button>
+    <div class="updated" id="updated"></div>
+  </div>
+</div>
+
+<script>
+const GROUPS = {
+  A: { name: 'A조', cap: 5, route: [['9월','1권'], ['10월','2권'], ['11월','3권']] },
+  B: { name: 'B조', cap: 5, route: [['9월','2권'], ['10월','3권'], ['11월','1권']] },
+  C: { name: 'C조', cap: 4, route: [['9월','3권'], ['10월','1권'], ['11월','2권']] },
+};
+
+const cardsEl = document.getElementById('cards');
+const nameInput = document.getElementById('nameInput');
+const updatedEl = document.getElementById('updated');
+
+function gsCall(fnName, ...args){
+  return new Promise((resolve, reject) => {
+    google.script.run
+      .withSuccessHandler(resolve)
+      .withFailureHandler(reject)
+      [fnName](...args);
+  });
+}
+
+async function loadRoster(){
+  try{
+    const v = await gsCall('getRoster');
+    return { A: v.A||[], B: v.B||[], C: v.C||[] };
+  }catch(e){
+    return {A:[],B:[],C:[]};
+  }
+}
+
+async function saveRoster(roster){
+  try{
+    await gsCall('saveRosterServer', roster);
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+
+function findGroupOf(roster, name){
+  const norm = name.trim().toLowerCase();
+  for(const g of Object.keys(GROUPS)){
+    if(roster[g].some(n => n.trim().toLowerCase() === norm)) return g;
+  }
+  return null;
+}
+
+function render(roster){
+  cardsEl.innerHTML = '';
+  Object.keys(GROUPS).forEach(key => {
+    const g = GROUPS[key];
+    const members = roster[key];
+    const isFull = members.length >= g.cap;
+
+    const card = document.createElement('div');
+    card.className = 'card' + (isFull ? ' full' : '');
+
+    const routeHtml = g.route.map((r, i) => `
+      <div class="route-stop"><span class="m">${r[0]}</span><span class="b">${r[1]}</span></div>
+      ${i < g.route.length - 1 ? '<span class="route-arrow">✈</span>' : ''}
+    `).join('');
+
+    const listHtml = members.length
+      ? members.map((n, i) => `
+          <li>
+            <span><span class="idx">${String(i+1).padStart(2,'0')}</span>${escapeHtml(n)}</span>
+            <button class="rm" data-group="${key}" data-name="${escapeHtml(n)}" title="신청 취소">✕</button>
+          </li>
+        `).join('')
+      : '<li class="empty-slot">아직 신청자가 없어요</li>';
+
+    card.innerHTML = `
+      ${isFull ? '<div class="stamp">마감</div>' : ''}
+      <div class="card__stub">
+        <div class="group-label">Reading Party · ${g.name}</div>
+        <div class="group-name">${g.name}</div>
+        <div class="route">${routeHtml}</div>
+      </div>
+      <div class="perforation"></div>
+      <div class="card__manifest">
+        <div class="seats"><span>탑승 인원</span><b>${members.length} / ${g.cap}</b></div>
+        <div class="bar"><div class="bar-fill${isFull ? ' full' : ''}" style="width:${Math.min(100, members.length/g.cap*100)}%"></div></div>
+        <ul class="manifest-list">${listHtml}</ul>
+        <button class="btn-board" data-group="${key}" ${isFull ? 'disabled' : ''}>${isFull ? '마감되었습니다' : '이 조에 신청하기'}</button>
+      </div>
+    `;
+    cardsEl.appendChild(card);
+  });
+
+  updatedEl.textContent = '마지막 갱신 ' + new Date().toLocaleTimeString('ko-KR');
+
+  cardsEl.querySelectorAll('.btn-board').forEach(btn => {
+    btn.addEventListener('click', () => handleBoard(btn.dataset.group));
+  });
+  cardsEl.querySelectorAll('.rm').forEach(btn => {
+    btn.addEventListener('click', () => handleRemove(btn.dataset.group, btn.dataset.name));
+  });
+}
+
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+async function refresh(){
+  const roster = await loadRoster();
+  render(roster);
+  return roster;
+}
+
+async function handleBoard(groupKey){
+  const name = nameInput.value.trim();
+  if(!name){
+    alert('이름을 먼저 입력해주세요.');
+    nameInput.focus();
+    return;
+  }
+  const roster = await loadRoster();
+  const existing = findGroupOf(roster, name);
+  if(existing){
+    alert(`이미 ${GROUPS[existing].name}에 신청되어 있어요. 다른 조로 옮기려면 먼저 취소해주세요.`);
+    render(roster);
+    return;
+  }
+  if(roster[groupKey].length >= GROUPS[groupKey].cap){
+    alert('방금 정원이 다 찼어요. 다른 조를 선택해주세요.');
+    render(roster);
+    return;
+  }
+  roster[groupKey].push(name);
+  const ok = await saveRoster(roster);
+  if(!ok){
+    alert('저장에 실패했어요. 잠시 후 다시 시도해주세요.');
+    return;
+  }
+  nameInput.value = '';
+  render(roster);
+}
+
+async function handleRemove(groupKey, name){
+  if(!confirm(`${name}님의 신청을 취소할까요?`)) return;
+  const roster = await loadRoster();
+  roster[groupKey] = roster[groupKey].filter(n => n !== name);
+  await saveRoster(roster);
+  render(roster);
+}
+
+document.getElementById('resetBtn').addEventListener('click', async () => {
+  if(!confirm('모든 조의 신청 내역을 전부 초기화할까요? 이 작업은 되돌릴 수 없어요.')) return;
+  const empty = {A:[],B:[],C:[]};
+  await saveRoster(empty);
+  render(empty);
+});
+
+nameInput.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter') e.preventDefault();
+});
+
+refresh();
+setInterval(refresh, 15000);
+</script>
+</body>
+</html>
